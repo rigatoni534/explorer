@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GitHub Repo Explorer</title>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<style>
+    :root {
+        --bg: #0a0e1a;
+        --bg-elevated: #141925;
+        --bg-elevated-soft: #1a1f2e;
+        --bg-hover: #1f2638;
+        --border-subtle: #2a3142;
+        --border-active: #3d4a63;
+        --accent: #f97316;
+        --accent-soft: #ea580c;
+        --accent-light: #fb923c;
+        --accent-glow: rgba(249, 115, 22, 0.2);
+        --text: #e6e8f0;
+        --text-dim: #9ca3af;
+        --text-dimmer: #6b7280;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --radius: 12px;
+        --radius-sm: 8px;
+        --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-medium: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.6;
+    }
+
+    .material-icons {
+        font-family: "Material Icons";
+        font-weight: normal;
+        font-style: normal;
+        font-size: 20px;
+        line-height: 1;
+        letter-spacing: normal;
+        text-transform: none;
+        display: inline-block;
+        white-space: nowrap;
+        word-wrap: normal;
+        direction: ltr;
+        vertical-align: middle;
+        user-select: none;
+    }
+
+    a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    /* Loading spinner */
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .spinner {
+        border: 2px solid var(--border-subtle);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 0.6s linear infinite;
+    }
+
+    /* Home Page */
+    .home-page {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    .home-hero {
+        max-width: 600px;
+        margin-bottom: 40px;
+    }
+
+    .home-logo {
+        font-size: 80px;
+        color: var(--accent);
+        margin-bottom: 20px;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .home-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .home-subtitle {
+        font-size: 1.1rem;
+        color: var(--text-dim);
+        margin-bottom: 40px;
+    }
+
+    .home-form {
+        background: var(--bg-elevated);
+        padding: 32px;
+        border-radius: var(--radius);
+        border: 1px solid var(--border-subtle);
+        max-width: 500px;
+        width: 100%;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+        text-align: left;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text);
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        background: var(--bg);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        color: var(--text);
+        font-size: 0.95rem;
+        font-family: "JetBrains Mono", monospace;
+        transition: all var(--transition-fast);
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .form-input::placeholder {
+        color: var(--text-dimmer);
+    }
+
+    .form-hint {
+        font-size: 0.75rem;
+        color: var(--text-dim);
+        margin-top: 6px;
+    }
+
+    .btn-primary {
+        width: 100%;
+        padding: 14px 24px;
+        background: var(--accent);
+        border: 1px solid var(--accent);
+        border-radius: var(--radius-sm);
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-primary:hover {
+        background: var(--accent-soft);
+        border-color: var(--accent-soft);
+        transform: translateY(-2px);
+        box-shadow: 0 0 0 3px var(--accent-glow), var(--shadow);
+    }
+
+    .btn-primary:active {
+        transform: translateY(0);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .home-examples {
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border-subtle);
+    }
+
+    .examples-title {
+        font-size: 0.8rem;
+        color: var(--text-dim);
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .example-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .example-chip {
+        padding: 6px 12px;
+        background: var(--bg);
+        border: 1px solid var(--border-subtle);
+        border-radius: 999px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        font-family: "JetBrains Mono", monospace;
+    }
+
+    .example-chip:hover {
+        background: var(--bg-hover);
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    /* Layout */
+    .page {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    .page.hidden {
+        display: none;
+    }
+
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border-subtle);
+        background: var(--bg-elevated-soft);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        backdrop-filter: blur(10px);
+    }
+
+    .user-repo {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+    }
+
+    .avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: var(--border-subtle);
+        flex-shrink: 0;
+        border: 2px solid var(--border-active);
+        object-fit: cover;
+    }
+
+    .user-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .user-meta-main {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        font-size: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .user-name {
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .repo-name {
+        color: var(--accent-light);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.95rem;
+    }
+
+    .user-meta-sub {
+        font-size: 0.75rem;
+        color: var(--text-dim);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .tag .material-icons {
+        font-size: 16px;
+    }
+
+    .topbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--border-subtle);
+        background: var(--bg-elevated);
+        color: var(--text);
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        white-space: nowrap;
+    }
+
+    .btn:hover {
+        background: var(--bg-hover);
+        border-color: var(--border-active);
+        transform: translateY(-1px);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+    }
+
+    .btn.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+        box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .btn .material-icons {
+        font-size: 18px;
+    }
+
+    .btn-change {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+    }
+
+    .btn-change:hover {
+        background: var(--accent-soft);
+        border-color: var(--accent-soft);
+    }
+
+    .layout-main {
+        display: grid;
+        grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.2fr);
+        gap: 0;
+        min-height: 0;
+        flex: 1;
+    }
+
+    @media (max-width: 1024px) {
+        .layout-main {
+            grid-template-columns: 1fr;
+        }
+        .viewer-pane {
+            display: none;
+        }
+        .viewer-pane.mobile-show {
+            display: flex;
+        }
+        .files-pane.mobile-hide {
+            display: none;
+        }
+    }
+
+    .pane {
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+        border-right: 1px solid var(--border-subtle);
+    }
+
+    .pane:last-child {
+        border-right: none;
+    }
+
+    .pane-header {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border-subtle);
+        font-size: 0.85rem;
+        color: var(--text-dim);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        background: var(--bg-elevated-soft);
+        flex-shrink: 0;
+    }
+
+    .pane-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .pane-title .material-icons {
+        font-size: 20px;
+        color: var(--accent);
+    }
+
+    .pane-body {
+        padding: 16px 20px;
+        overflow: auto;
+        flex: 1;
+    }
+
+    /* Search bar */
+    .search-container {
+        position: relative;
+        width: 100%;
+        max-width: 400px;
+        margin-bottom: 16px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 10px 40px 10px 40px;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        color: var(--text);
+        font-size: 0.85rem;
+        font-family: inherit;
+        transition: all var(--transition-fast);
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-dim);
+        pointer-events: none;
+    }
+
+    .search-clear {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        padding: 4px;
+        cursor: pointer;
+        color: var(--text-dim);
+        opacity: 0;
+        transition: opacity var(--transition-fast);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+    }
+
+    .search-clear:hover {
+        color: var(--text);
+        background: var(--bg-hover);
+    }
+
+    .search-input:not(:placeholder-shown) ~ .search-clear {
+        opacity: 1;
+    }
+
+    /* Path breadcrumb */
+    .path-bar {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-wrap: wrap;
+        font-size: 0.8rem;
+        padding: 8px 12px;
+        background: var(--bg-elevated);
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-subtle);
+    }
+
+    .crumb {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 6px;
+        transition: all var(--transition-fast);
+        color: var(--text-dim);
+        font-family: "JetBrains Mono", monospace;
+    }
+
+    .crumb-root {
+        font-weight: 600;
+        color: var(--accent-light);
+    }
+
+    .crumb:hover {
+        background: var(--bg-hover);
+        color: var(--text);
+    }
+
+    .crumb-separator {
+        opacity: 0.4;
+        font-size: 0.7rem;
+        user-select: none;
+    }
+
+    /* File list */
+    .file-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+        font-size: 0.75rem;
+        color: var(--text-dim);
+        flex-wrap: wrap;
+    }
+
+    .file-toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        flex: 1;
+    }
+
+    .file-toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .files {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .view-grid .files {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+    }
+
+    .file-item {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-rows: auto auto;
+        grid-template-areas:
+            "icon main"
+            "icon meta";
+        gap: 4px 12px;
+        padding: 12px 14px;
+        border-radius: var(--radius-sm);
+        background: var(--bg-elevated);
+        cursor: pointer;
+        font-size: 0.85rem;
+        border: 1px solid transparent;
+        transition: all var(--transition-fast);
+    }
+
+    .view-grid .file-item {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        grid-template-areas:
+            "icon"
+            "main"
+            "meta";
+        text-align: center;
+        padding: 16px;
+    }
+
+    .file-item:hover {
+        background: var(--bg-hover);
+        border-color: var(--border-active);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+
+    .file-item.active {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-glow), var(--shadow);
+        background: var(--bg-elevated-soft);
+    }
+
+    .file-icon {
+        grid-area: icon;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .view-grid .file-icon {
+        margin-bottom: 8px;
+    }
+
+    .file-icon-inner {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        transition: transform var(--transition-fast);
+    }
+
+    .file-item:hover .file-icon-inner {
+        transform: scale(1.1);
+    }
+
+    .file-main {
+        grid-area: main;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .view-grid .file-main {
+        justify-content: center;
+    }
+
+    .file-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .file-badge {
+        font-size: 0.65rem;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: rgba(249, 115, 22, 0.15);
+        color: var(--accent-light);
+        flex-shrink: 0;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .file-meta {
+        grid-area: meta;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 0.7rem;
+        color: var(--text-dimmer);
+    }
+
+    .view-grid .file-meta {
+        justify-content: center;
+    }
+
+    .meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .meta-pill .material-icons {
+        font-size: 14px;
+    }
+
+    /* Viewer */
+    .viewer-empty {
+        font-size: 0.9rem;
+        color: var(--text-dim);
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .viewer-placeholder-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        color: var(--text-dimmer);
+        opacity: 0.5;
+    }
+
+    .viewer-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 0.85rem;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
+
+    .viewer-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .viewer-title-name {
+        max-width: 300px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .viewer-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .viewer-meta {
+        margin-bottom: 16px;
+        font-size: 0.75rem;
+        color: var(--text-dim);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .viewer-content {
+        border-radius: var(--radius);
+        border: 1px solid var(--border-subtle);
+        background: var(--bg-elevated);
+        padding: 16px;
+        max-height: calc(100vh - 280px);
+        overflow: auto;
+        font-size: 0.85rem;
+    }
+
+    .viewer-content pre {
+        margin: 0;
+        white-space: pre;
+        overflow: auto;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.8rem;
+        line-height: 1.6;
+    }
+
+    .viewer-content img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        border-radius: var(--radius-sm);
+        box-shadow: var(--shadow);
+    }
+
+    .viewer-content video,
+    .viewer-content audio {
+        max-width: 100%;
+        display: block;
+        border-radius: var(--radius-sm);
+    }
+
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-subtle);
+        font-size: 0.7rem;
+        color: var(--text-dim);
+        font-weight: 500;
+    }
+
+    .pill .material-icons {
+        font-size: 14px;
+    }
+
+    .muted {
+        color: var(--text-dim);
+    }
+
+    /* Error state */
+    .error-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        color: var(--text-dim);
+    }
+
+    .error-state .material-icons {
+        font-size: 48px;
+        color: var(--danger);
+        opacity: 0.7;
+    }
+
+    .retry-btn {
+        margin-top: 8px;
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+    }
+
+    .retry-btn:hover {
+        background: var(--accent-soft);
+        border-color: var(--accent-soft);
+    }
+
+    /* Loading state */
+    .loading-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        padding: 40px 20px;
+        color: var(--text-dim);
+    }
+
+    /* Mobile back button */
+    .mobile-back {
+        display: none;
+    }
+
+    @media (max-width: 1024px) {
+        .mobile-back {
+            display: flex;
+        }
+        .topbar {
+            padding: 12px 16px;
+        }
+        .pane-body {
+            padding: 12px 16px;
+        }
+        .home-title {
+            font-size: 2rem;
+        }
+        .home-form {
+            padding: 24px;
+        }
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--border-subtle);
+        border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--border-active);
+    }
+
+    /* Copy button for paths */
+    .copy-btn {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+    }
+
+    .copy-btn.copied {
+        background: var(--success);
+        border-color: var(--success);
+        color: white;
+    }
+
+    .error-message {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid var(--danger);
+        color: var(--danger);
+        padding: 12px;
+        border-radius: var(--radius-sm);
+        margin-bottom: 16px;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+</style>
+</head>
+<body>
+
+<!-- HOME PAGE -->
+<div class="home-page" id="home-page">
+    <div class="home-hero">
+        <div class="home-logo material-icons">folder_open</div>
+        <h1 class="home-title">GitHub Repo Explorer</h1>
+        <p class="home-subtitle">Browse any public GitHub repository with style</p>
+    </div>
+
+    <div class="home-form">
+        <div id="error-container"></div>
+        
+        <div class="form-group">
+            <label class="form-label" for="username-input">GitHub Username</label>
+            <input 
+                type="text" 
+                id="username-input" 
+                class="form-input" 
+                placeholder="e.g. octocat"
+                autocomplete="off"
+            />
+            <div class="form-hint">Enter the GitHub username of the repository owner</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="repo-input">Repository Name</label>
+            <input 
+                type="text" 
+                id="repo-input" 
+                class="form-input" 
+                placeholder="e.g. hello-world"
+                autocomplete="off"
+            />
+            <div class="form-hint">Enter the name of the repository to explore</div>
+        </div>
+
+        <button class="btn-primary" id="explore-btn">
+            <span class="material-icons">rocket_launch</span>
+            <span>Explore Repository</span>
+        </button>
+
+        <div class="home-examples">
+            <div class="examples-title">Try an example</div>
+            <div class="example-chips">
+                <span class="example-chip" data-user="torvalds" data-repo="linux">torvalds/linux</span>
+                <span class="example-chip" data-user="facebook" data-repo="react">facebook/react</span>
+                <span class="example-chip" data-user="microsoft" data-repo="vscode">microsoft/vscode</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- EXPLORER PAGE -->
+<div class="page hidden" id="explorer-page">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+        <div class="user-repo">
+            <img id="avatar" class="avatar" alt="User avatar">
+            <div class="user-meta">
+                <div class="user-meta-main">
+                    <span id="user-name" class="user-name">Loading…</span>
+                    <span>/</span>
+                    <span id="repo-name" class="repo-name"></span>
+                </div>
+                <div class="user-meta-sub">
+                    <span class="tag">
+                        <span class="material-icons">description</span>
+                        <span id="file-count">– files</span>
+                    </span>
+                    <span class="tag">
+                        <span class="material-icons">merge_type</span>
+                        <span id="default-branch">branch: –</span>
+                    </span>
+                    <span class="tag">
+                        <span class="material-icons">schedule</span>
+                        <span id="repo-updated">updated: –</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="topbar-actions">
+            <button id="change-repo-btn" class="btn btn-change" type="button">
+                <span class="material-icons">swap_horiz</span>
+                <span>Change Repo</span>
+            </button>
+            <button id="view-list-btn" class="btn active" type="button">
+                <span class="material-icons">view_list</span>
+                <span>List</span>
+            </button>
+            <button id="view-grid-btn" class="btn" type="button">
+                <span class="material-icons">grid_view</span>
+                <span>Grid</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="layout-main">
+
+        <!-- LEFT: FILES -->
+        <section class="pane files-pane" id="files-pane">
+            <div class="pane-header">
+                <div class="pane-title">
+                    <span class="material-icons">folder_open</span>
+                    <span>Files</span>
+                </div>
+                <button class="btn mobile-back" id="mobile-back" style="display: none;">
+                    <span class="material-icons">arrow_back</span>
+                    <span>Back</span>
+                </button>
+            </div>
+            <div class="pane-body view-list" id="files-view">
+                <div class="search-container">
+                    <span class="material-icons search-icon">search</span>
+                    <input type="text" class="search-input" id="search-input" placeholder="Search files..." />
+                    <button class="search-clear" id="search-clear">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+
+                <div class="path-bar" id="path-bar"></div>
+
+                <div class="file-toolbar">
+                    <div class="file-toolbar-left">
+                        <span id="current-folder-label" class="muted">Path: /</span>
+                    </div>
+                    <div class="file-toolbar-right">
+                        <button class="btn copy-btn" id="copy-path-btn" title="Copy current path">
+                            <span class="material-icons">content_copy</span>
+                        </button>
+                        <span id="item-count" class="muted">– items</span>
+                    </div>
+                </div>
+                <div id="files-container" class="files"></div>
+            </div>
+        </section>
+
+        <!-- RIGHT: VIEWER -->
+        <section class="pane viewer-pane">
+            <div class="pane-header">
+                <div class="pane-title">
+                    <span class="material-icons">preview</span>
+                    <span>Preview</span>
+                </div>
+            </div>
+            <div class="pane-body">
+                <div id="viewer">
+                    <div class="viewer-empty">
+                        <div class="viewer-placeholder-icon material-icons">
+                            touch_app
+                        </div>
+                        <div>Click a file to preview its content</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+/* =======================
+   CONFIG
+   ======================= */
+const CONFIG = {
+    USER: "",
+    REPO: "",
+    BRANCH: "main",
+    MAX_FILES_COUNT: 5000
+};
+
+/* =======================
+   STATE
+   ======================= */
+let currentPath = "";
+let currentView = "list";
+let currentItems = [];
+let filteredItems = [];
+let selectedFile = null;
+let totalFileCount = 0;
+let searchQuery = "";
+
+/* =======================
+   HELPERS
+   ======================= */
+
+function joinPath(base, segment) {
+    if (!base) return segment;
+    return base.replace(/\/+$/, "") + "/" + segment.replace(/^\/+/, "");
+}
+
+function splitPath(path) {
+    if (!path) return [];
+    return path.split("/").filter(Boolean);
+}
+
+function formatBytes(bytes) {
+    if (bytes == null || isNaN(bytes)) return "–";
+    const units = ["B", "KB", "MB", "GB", "TB"];
+    let i = 0;
+    let num = bytes;
+    while (num >= 1024 && i < units.length - 1) {
+        num /= 1024;
+        i++;
+    }
+    return `${num.toFixed(num < 10 && i > 0 ? 1 : 0)} ${units[i]}`;
+}
+
+function formatDate(iso) {
+    if (!iso) return "–";
+    const d = new Date(iso);
+    if (isNaN(d)) return "–";
+    const now = new Date();
+    const diff = now - d;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    
+    if (days === 0) return "today";
+    if (days === 1) return "yesterday";
+    if (days < 7) return `${days} days ago`;
+    if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
+    if (days < 365) return `${Math.floor(days / 30)} months ago`;
+    return `${Math.floor(days / 365)} years ago`;
+}
+
+function getExtension(name) {
+    const idx = name.lastIndexOf(".");
+    if (idx === -1) return "";
+    return name.slice(idx + 1).toLowerCase();
+}
+
+function classifyFile(ext, mime) {
+    const textExts = ["txt", "md", "markdown", "json", "yml", "yaml", "xml", "html", "htm", "css", "js", "ts", "tsx", "jsx", "c", "cpp", "h", "hpp", "py", "rb", "rs", "go", "java", "cs", "php", "sh", "bat", "lua", "ini", "cfg", "toml", "vue", "svelte"];
+    const imgExts = ["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "ico", "avif"];
+    const audioExts = ["mp3", "ogg", "wav", "flac", "m4a", "aac", "opus"];
+    const videoExts = ["mp4", "webm", "ogg", "mov", "m4v", "avi", "mkv"];
+
+    if (imgExts.includes(ext) || (mime && mime.startsWith("image/"))) return "image";
+    if (audioExts.includes(ext) || (mime && mime.startsWith("audio/"))) return "audio";
+    if (videoExts.includes(ext) || (mime && mime.startsWith("video/"))) return "video";
+    if (textExts.includes(ext) || (mime && (mime.startsWith("text/") || mime.endsWith("json")))) return "text";
+
+    return "binary";
+}
+
+function getIconForItem(item) {
+    if (item.type === "dir") {
+        return {
+            icon: "folder",
+            color: "#fbbf24",
+            bg: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
+            label: "folder"
+        };
+    }
+
+    const ext = getExtension(item.name);
+
+    const iconMap = {
+        "md": { icon: "description", bg: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)", color: "#fff" },
+        "txt": { icon: "article", bg: "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)", color: "#fff" },
+        "json": { icon: "data_object", bg: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "#fff" },
+        "yml": { icon: "settings", bg: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)", color: "#fff" },
+        "yaml": { icon: "settings", bg: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)", color: "#fff" },
+        "html": { icon: "code", bg: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)", color: "#fff" },
+        "htm": { icon: "code", bg: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)", color: "#fff" },
+        "css": { icon: "palette", bg: "linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)", color: "#fff" },
+        "js": { icon: "javascript", bg: "linear-gradient(135deg, #facc15 0%, #eab308 100%)", color: "#000" },
+        "ts": { icon: "javascript", bg: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)", color: "#fff" },
+        "tsx": { icon: "javascript", bg: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)", color: "#fff" },
+        "jsx": { icon: "javascript", bg: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)", color: "#fff" },
+        "py": { icon: "code", bg: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)", color: "#fff" },
+        "png": { icon: "image", bg: "linear-gradient(135deg, #ec4899 0%, #db2777 100%)", color: "#fff" },
+        "jpg": { icon: "image", bg: "linear-gradient(135deg, #ec4899 0%, #db2777 100%)", color: "#fff" },
+        "jpeg": { icon: "image", bg: "linear-gradient(135deg, #ec4899 0%, #db2777 100%)", color: "#fff" },
+        "gif": { icon: "gif", bg: "linear-gradient(135deg, #ec4899 0%, #db2777 100%)", color: "#fff" },
+        "svg": { icon: "image", bg: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)", color: "#fff" },
+        "mp3": { icon: "audio_file", bg: "linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)", color: "#fff" },
+        "wav": { icon: "audio_file", bg: "linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)", color: "#fff" },
+        "mp4": { icon: "video_file", bg: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", color: "#fff" },
+        "webm": { icon: "video_file", bg: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", color: "#fff" },
+        "pdf": { icon: "picture_as_pdf", bg: "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)", color: "#fff" },
+        "zip": { icon: "folder_zip", bg: "linear-gradient(135deg, #a855f7 0%, #9333ea 100%)", color: "#fff" },
+        "tar": { icon: "folder_zip", bg: "linear-gradient(135deg, #a855f7 0%, #9333ea 100%)", color: "#fff" },
+        "gz": { icon: "folder_zip", bg: "linear-gradient(135deg, #a855f7 0%, #9333ea 100%)", color: "#fff" }
+    };
+
+    if (iconMap[ext]) {
+        return { ...iconMap[ext], label: ext || "file" };
+    }
+
+    const type = classifyFile(ext, item.type);
+    
+    if (type === "image") {
+        return { icon: "image", bg: "linear-gradient(135deg, #ec4899 0%, #db2777 100%)", color: "#fff", label: ext };
+    } else if (type === "audio") {
+        return { icon: "audio_file", bg: "linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)", color: "#fff", label: ext };
+    } else if (type === "video") {
+        return { icon: "video_file", bg: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", color: "#fff", label: ext };
+    } else if (type === "text") {
+        return { icon: "description", bg: "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)", color: "#fff", label: ext };
+    }
+
+    return { icon: "insert_drive_file", bg: "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)", color: "#fff", label: ext || "file" };
+}
+
+/* =======================
+   API
+   ======================= */
+
+async function fetchJSON(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+    return await res.json();
+}
+
+function repoContentsURL(path) {
+    const encodedPath = path ? "/" + encodeURIComponent(path).replace(/%2F/g, "/") : "";
+    return `https://api.github.com/repos/${CONFIG.USER}/${CONFIG.REPO}/contents${encodedPath}?ref=${CONFIG.BRANCH}`;
+}
+
+function repoInfoURL() {
+    return `https://api.github.com/repos/${CONFIG.USER}/${CONFIG.REPO}`;
+}
+
+function userInfoURL() {
+    return `https://api.github.com/users/${CONFIG.USER}`;
+}
+
+function rawFileURL(item) {
+    return item.download_url;
+}
+
+async function countAllFiles(path = "", seen = {count: 0}) {
+    if (seen.count >= CONFIG.MAX_FILES_COUNT) return;
+    const url = repoContentsURL(path);
+    const data = await fetchJSON(url);
+
+    for (const item of data) {
+        if (item.type === "file") {
+            seen.count++;
+            if (seen.count >= CONFIG.MAX_FILES_COUNT) break;
+        } else if (item.type === "dir") {
+            await countAllFiles(item.path, seen);
+            if (seen.count >= CONFIG.MAX_FILES_COUNT) break;
+        }
+    }
+    return seen.count;
+}
+
+/* =======================
+   HOME PAGE
+   ======================= */
+
+function showHomePage() {
+    document.getElementById("home-page").classList.remove("hidden");
+    document.getElementById("explorer-page").classList.add("hidden");
+}
+
+function showExplorerPage() {
+    document.getElementById("home-page").classList.add("hidden");
+    document.getElementById("explorer-page").classList.remove("hidden");
+}
+
+function showError(message) {
+    const errorContainer = document.getElementById("error-container");
+    errorContainer.innerHTML = `
+        <div class="error-message">
+            <span class="material-icons">error</span>
+            <span>${message}</span>
+        </div>
+    `;
+}
+
+function clearError() {
+    document.getElementById("error-container").innerHTML = "";
+}
+
+async function exploreRepository(user, repo) {
+    clearError();
+    
+    if (!user || !repo) {
+        showError("Please enter both username and repository name");
+        return;
+    }
+
+    CONFIG.USER = user.trim();
+    CONFIG.REPO = repo.trim();
+    
+    const exploreBtn = document.getElementById("explore-btn");
+    exploreBtn.disabled = true;
+    exploreBtn.innerHTML = '<div class="spinner"></div><span>Loading...</span>';
+
+    try {
+        showExplorerPage();
+        await loadTopBar();
+        await navigateToPath("");
+        exploreBtn.disabled = false;
+        exploreBtn.innerHTML = '<span class="material-icons">rocket_launch</span><span>Explore Repository</span>';
+    } catch (e) {
+        console.error("Error loading repository:", e);
+        showHomePage();
+        showError(`Failed to load repository: ${e.message}`);
+        exploreBtn.disabled = false;
+        exploreBtn.innerHTML = '<span class="material-icons">rocket_launch</span><span>Explore Repository</span>';
+    }
+}
+
+/* =======================
+   RENDER: TOP BAR
+   ======================= */
+
+async function loadTopBar() {
+    const [user, repo] = await Promise.all([
+        fetchJSON(userInfoURL()),
+        fetchJSON(repoInfoURL())
+    ]);
+
+    const avatar = document.getElementById("avatar");
+    const userNameEl = document.getElementById("user-name");
+    const repoNameEl = document.getElementById("repo-name");
+    const branchEl = document.getElementById("default-branch");
+    const updatedEl = document.getElementById("repo-updated");
+    const fileCountEl = document.getElementById("file-count");
+
+    avatar.src = user.avatar_url;
+    avatar.alt = `${user.login} avatar`;
+    userNameEl.textContent = user.name || user.login;
+    repoNameEl.textContent = repo.name;
+    branchEl.textContent = `branch: ${repo.default_branch}`;
+    updatedEl.textContent = `updated: ${formatDate(repo.pushed_at)}`;
+
+    CONFIG.BRANCH = repo.default_branch;
+
+    try {
+        totalFileCount = await countAllFiles("");
+        fileCountEl.textContent = `${totalFileCount >= CONFIG.MAX_FILES_COUNT ? CONFIG.MAX_FILES_COUNT + "+" : totalFileCount} files`;
+    } catch (e) {
+        console.warn("Error counting files:", e);
+        fileCountEl.textContent = "files: n/a";
+    }
+}
+
+/* =======================
+   RENDER: PATH BAR
+   ======================= */
+
+function renderPathBar() {
+    const pathBar = document.getElementById("path-bar");
+    const label = document.getElementById("current-folder-label");
+    pathBar.innerHTML = "";
+
+    const parts = splitPath(currentPath);
+
+    const rootCrumb = document.createElement("span");
+    rootCrumb.className = "crumb crumb-root";
+    rootCrumb.innerHTML = '<span class="material-icons" style="font-size: 16px;">home</span>';
+    rootCrumb.title = "Go to repository root";
+    rootCrumb.addEventListener("click", () => navigateToPath(""));
+    pathBar.appendChild(rootCrumb);
+
+    let pathAccum = "";
+    parts.forEach((part, idx) => {
+        const sep = document.createElement("span");
+        sep.className = "crumb-separator";
+        sep.textContent = "/";
+        pathBar.appendChild(sep);
+
+        pathAccum = joinPath(pathAccum, part);
+        const crumb = document.createElement("span");
+        crumb.className = "crumb";
+        crumb.textContent = part;
+        crumb.title = pathAccum;
+        crumb.addEventListener("click", () => navigateToPath(pathAccum));
