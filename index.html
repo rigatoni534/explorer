@@ -1332,21 +1332,28 @@ async function exploreRepository(user, repo) {
     CONFIG.REPO = repo.trim();
     
     const exploreBtn = document.getElementById("explore-btn");
+    const originalHTML = exploreBtn.innerHTML;
     exploreBtn.disabled = true;
     exploreBtn.innerHTML = '<div class="spinner"></div><span>Loading...</span>';
 
     try {
-        showExplorerPage();
+        // First verify the repo exists by loading user and repo info
         await loadTopBar();
+        
+        // Only show explorer page after we know the repo is valid
+        showExplorerPage();
+        
+        // Then load the root directory
         await navigateToPath("");
-        exploreBtn.disabled = false;
-        exploreBtn.innerHTML = '<span class="material-icons">rocket_launch</span><span>Explore Repository</span>';
+        
     } catch (e) {
         console.error("Error loading repository:", e);
-        showHomePage();
-        showError(`Failed to load repository: ${e.message}`);
+        showError(`Failed to load repository. Please check the username and repository name.`);
+        CONFIG.USER = "";
+        CONFIG.REPO = "";
+    } finally {
         exploreBtn.disabled = false;
-        exploreBtn.innerHTML = '<span class="material-icons">rocket_launch</span><span>Explore Repository</span>';
+        exploreBtn.innerHTML = originalHTML;
     }
 }
 
